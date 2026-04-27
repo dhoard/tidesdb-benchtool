@@ -89,6 +89,11 @@ typedef struct
     size_t max_open_sstables;   /* max cached SSTable structures (0 = engine default) */
     size_t max_memory_usage;    /* global memory limit in bytes (0 = engine default) */
     int log_to_file;            /* write engine logs to file (1 = yes, 0 = stderr) */
+    int max_concurrent_flushes; /* TidesDB 9.2.0 global flush semaphore (0 = engine default 4) */
+
+    /* TidesDB 9.2.0 tombstone density compaction trigger */
+    double tombstone_density_trigger;       /* 0.0 disables (engine default), range (0.0, 1.0] */
+    uint64_t tombstone_density_min_entries; /* min entries per SST to be considered, 0 = default */
 
     /* TidesDB column-family tuning */
     const char *compression_algorithm; /* "lz4","lz4fast","zstd","snappy","none" (NULL = lz4) */

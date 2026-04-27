@@ -40,7 +40,7 @@ static void print_usage(const char *prog)
     printf("  -o, --operations <num>    Number of operations (default: 100000)\n");
     printf("  -k, --key-size <bytes>    Key size in bytes (default: 16)\n");
     printf("  -v, --value-size <bytes>  Value size in bytes (default: 100)\n");
-    printf("  -t, --threads <num>       Number of threads (default: 1)\n");
+    printf("  -t, --threads <num>       Number of threads (default: 8)\n");
     printf("  -b, --batch-size <num>    Batch size for operations (default: 1)\n");
     printf("  -d, --db-path <path>      Database path (default: ./bench_db)\n");
     printf("  -c, --compare             Compare against RocksDB baseline\n");
@@ -63,7 +63,8 @@ static void print_usage(const char *prog)
     printf("  --no-rocksdb-blobdb       Disable RocksDB BlobDB\n");
     printf("  --bloom-fp <fp>           Bloom filter false positive rate (0.01 = default)\n");
     printf(
-        "  --l0_queue_stall_threshold <num> L0 queue stall threshold (10 = default) (TidesDB) \n");
+        "  --l0_queue_stall_threshold <num> L0 queue stall threshold (20 = default, matches "
+        "engine) (TidesDB) \n");
     printf("  --l1_file_count_trigger <num> L1 file count trigger (4 = default) (TidesDB) \n");
     printf("  --bloom-filters           Enable bloom filters\n");
     printf("  --klog_value_threshold <bytes> Klog value threshold (512 bytes = default)\n");
@@ -79,8 +80,17 @@ static void print_usage(const char *prog)
     printf("  --debug                   Enable debug logging for storage engines\n");
     printf("  --use-btree               Use B+tree format for klog (TidesDB)\n");
     printf("\nTidesDB engine-level configuration:\n");
-    printf("  --num-flush-threads <n>          Flush thread pool size (default 1)\n");
-    printf("  --num-compaction-threads <n>     Compaction thread pool size (default 1)\n");
+    printf("  --num-flush-threads <n>          Flush thread pool size (default 4)\n");
+    printf("  --num-compaction-threads <n>     Compaction thread pool size (default 2)\n");
+    printf(
+        "  --max-concurrent-flushes <n>     TidesDB 9.2.0 global flush semaphore (default engine "
+        "4)\n");
+    printf(
+        "  --tombstone-density-trigger <r>  TidesDB 9.2.0 density trigger ratio (0.0 disables, "
+        "e.g. 0.3)\n");
+    printf(
+        "  --tombstone-density-min-entries <n>  Min sstable entries for density check (default "
+        "1024)\n");
     printf("  --max-open-sstables <n>          Max cached SSTable structures (default 256)\n");
     printf("  --max-memory-usage <bytes>       Global memory limit (0 = auto, 50%% of RAM)\n");
     printf("  --log-to-file <0|1>              Log to file vs stderr (default 1)\n");
@@ -144,7 +154,7 @@ int main(int argc, char **argv)
                                  .num_operations = 10000000,
                                  .key_size = 16,
                                  .value_size = 100,
-                                 .num_threads = 4,
+                                 .num_threads = 8,
                                  .batch_size = 1,
                                  .db_path = "./bench_db",
                                  .compare_mode = 0,
@@ -161,7 +171,7 @@ int main(int argc, char **argv)
                                  .enable_bloom_filter = -1,
                                  .enable_block_indexes = -1,
                                  .bloom_fpr = 0.01,
-                                 .l0_queue_stall_threshold = 10,
+                                 .l0_queue_stall_threshold = 20,
                                  .l1_file_count_trigger = 4,
                                  .dividing_level_offset = 2,
                                  .min_levels = 5,
@@ -170,8 +180,8 @@ int main(int argc, char **argv)
                                  .klog_value_threshold = 512,
                                  .debug_logging = 0,
                                  .use_btree = 0,
-                                 .num_flush_threads = 0,
-                                 .num_compaction_threads = 0,
+                                 .num_flush_threads = 4,
+                                 .num_compaction_threads = 2,
                                  .max_open_sstables = 0,
                                  .max_memory_usage = 0,
                                  .log_to_file = 0,
@@ -214,7 +224,10 @@ int main(int argc, char **argv)
                                  .object_replica_sync_interval_us = 0,
                                  .object_replica_replay_wal = -1,
                                  .object_lazy_compaction = -1,
-                                 .object_prefetch_compaction = -1};
+                                 .object_prefetch_compaction = -1,
+                                 .max_concurrent_flushes = 0,
+                                 .tombstone_density_trigger = 0.0,
+                                 .tombstone_density_min_entries = 0};
 
     enum
     {
@@ -273,7 +286,10 @@ int main(int argc, char **argv)
         OPT_OBJECT_REPLICA_SYNC_INTERVAL_US,
         OPT_OBJECT_REPLICA_REPLAY_WAL,
         OPT_OBJECT_LAZY_COMPACTION,
-        OPT_OBJECT_PREFETCH_COMPACTION
+        OPT_OBJECT_PREFETCH_COMPACTION,
+        OPT_MAX_CONCURRENT_FLUSHES,
+        OPT_TOMBSTONE_DENSITY_TRIGGER,
+        OPT_TOMBSTONE_DENSITY_MIN_ENTRIES
     };
 
     static struct option long_options[] = {
@@ -360,6 +376,9 @@ int main(int argc, char **argv)
         {"object-replica-replay-wal", required_argument, 0, OPT_OBJECT_REPLICA_REPLAY_WAL},
         {"object-lazy-compaction", required_argument, 0, OPT_OBJECT_LAZY_COMPACTION},
         {"object-prefetch-compaction", required_argument, 0, OPT_OBJECT_PREFETCH_COMPACTION},
+        {"max-concurrent-flushes", required_argument, 0, OPT_MAX_CONCURRENT_FLUSHES},
+        {"tombstone-density-trigger", required_argument, 0, OPT_TOMBSTONE_DENSITY_TRIGGER},
+        {"tombstone-density-min-entries", required_argument, 0, OPT_TOMBSTONE_DENSITY_MIN_ENTRIES},
         {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0}};
 
@@ -642,6 +661,15 @@ int main(int argc, char **argv)
                 break;
             case OPT_OBJECT_PREFETCH_COMPACTION:
                 config.object_prefetch_compaction = atoi(optarg);
+                break;
+            case OPT_MAX_CONCURRENT_FLUSHES:
+                config.max_concurrent_flushes = atoi(optarg);
+                break;
+            case OPT_TOMBSTONE_DENSITY_TRIGGER:
+                config.tombstone_density_trigger = atof(optarg);
+                break;
+            case OPT_TOMBSTONE_DENSITY_MIN_ENTRIES:
+                config.tombstone_density_min_entries = (uint64_t)strtoull(optarg, NULL, 10);
                 break;
             default:
                 print_usage(argv[0]);

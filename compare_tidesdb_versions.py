@@ -252,9 +252,9 @@ def plot_mixed_comparison(df_new, df_old, new_label, old_label):
     
     panels = []
     if put_avail:
-        panels.append((put_avail, 'Mixed — Write Side'))
+        panels.append((put_avail, 'Mixed - Write Side'))
     if get_avail:
-        panels.append((get_avail, 'Mixed — Read Side'))
+        panels.append((get_avail, 'Mixed - Read Side'))
     
     fig, axes = plt.subplots(1, len(panels), figsize=(8 * len(panels), 6))
     if len(panels) == 1:
@@ -382,7 +382,7 @@ def plot_batch_comparison(df_new, df_old, new_label, old_label):
     ax.set_xscale('log')
     ax.set_xlabel('Batch Size')
     ax.set_ylabel('ops/sec')
-    ax.set_title('Batch Size Scaling — Write Throughput')
+    ax.set_title('Batch Size Scaling - Write Throughput')
     ax.legend()
     ax.set_axisbelow(True)
     
