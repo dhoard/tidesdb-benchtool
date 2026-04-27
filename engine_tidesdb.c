@@ -157,6 +157,13 @@ static int tidesdb_open_impl(storage_engine_t **engine, const char *path,
         tdb_config.max_memory_usage = config->max_memory_usage;
     }
 
+    /* TidesDB 9.2.0 global flush semaphore. only assign when nonzero so older
+     * libraries that lack the field stay at their compiled default. */
+    if (config->max_concurrent_flushes > 0)
+    {
+        tdb_config.max_concurrent_flushes = config->max_concurrent_flushes;
+    }
+
     /* unified memtable mode */
     tdb_config.unified_memtable = config->unified_memtable ? 1 : 0;
     tdb_config.unified_memtable_write_buffer_size = config->unified_memtable_write_buffer_size;
@@ -321,6 +328,13 @@ static int tidesdb_open_impl(storage_engine_t **engine, const char *path,
 
     handle->cf_config.enable_block_indexes =
         config->enable_block_indexes >= 0 ? config->enable_block_indexes : 1;
+
+    /* TidesDB 9.2.0 tombstone density compaction trigger. left at engine
+     * default (0.0 disabled) unless the caller passes nonzero values. */
+    if (config->tombstone_density_trigger > 0.0)
+        handle->cf_config.tombstone_density_trigger = config->tombstone_density_trigger;
+    if (config->tombstone_density_min_entries > 0)
+        handle->cf_config.tombstone_density_min_entries = config->tombstone_density_min_entries;
 
     /* per-CF object store tuning */
     if (config->object_lazy_compaction >= 0)

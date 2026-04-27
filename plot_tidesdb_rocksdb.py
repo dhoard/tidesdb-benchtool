@@ -230,9 +230,9 @@ def plot_read_mixed(df):
     if read_avail:
         panels.append((read_avail, 'Read Throughput'))
     if put_avail:
-        panels.append((put_avail, 'Mixed — Write Side'))
+        panels.append((put_avail, 'Mixed - Write Side'))
     if get_avail:
-        panels.append((get_avail, 'Mixed — Read Side'))
+        panels.append((get_avail, 'Mixed - Read Side'))
     
     if not panels:
         print('  - 02_read_mixed_throughput.png (no data, skipped)')
@@ -394,7 +394,7 @@ def plot_batch_scaling(df):
     fig, axes = plt.subplots(1, len(panels), figsize=(8*len(panels), 6))
     if len(panels) == 1:
         axes = [axes]
-    fig.suptitle('Batch Size Scaling — Write Throughput')
+    fig.suptitle('Batch Size Scaling - Write Throughput')
     
     for ax, (batches, names, title) in zip(axes, panels):
         tv = [val(df,'tidesdb',n,'PUT','ops_per_sec') for n in names]
@@ -508,7 +508,7 @@ def plot_latency_overview(df):
         fig, axes = plt.subplots(rows, 2, figsize=(18, 6*rows))
         axes = axes.flatten()[:n]
     
-    fig.suptitle('Average Latency (us) — Lower is Better')
+    fig.suptitle('Average Latency (us) - Lower is Better')
     for ax, (title, tests) in zip(axes, panels):
         lbl = [t[2] for t in tests]
         tv = [val(df,'tidesdb',t[0],t[1],'avg_latency_us') for t in tests]
@@ -551,7 +551,7 @@ def plot_latency_percentiles(df):
         fig, axes = plt.subplots(rows, 3, figsize=(20, 6*rows))
         axes = axes.flatten()[:n]
     
-    fig.suptitle('Latency Percentiles (us) — p50 / p95 / p99')
+    fig.suptitle('Latency Percentiles (us) - p50 / p95 / p99')
     for ax, (tn, op, title) in zip(axes, wklds):
         pcts = ['p50_us','p95_us','p99_us']
         tv = [val(df,'tidesdb',tn,op,p) for p in pcts]
@@ -592,7 +592,7 @@ def plot_write_amp(df):
     fig, axes = plt.subplots(1, len(panels), figsize=(9*len(panels), 6))
     if len(panels) == 1:
         axes = [axes]
-    fig.suptitle('Write Amplification — Lower is Better')
+    fig.suptitle('Write Amplification - Lower is Better')
     
     for ax, (tests, title) in zip(axes, panels):
         lbl = [t[2] for t in tests]
@@ -623,7 +623,7 @@ def plot_space(df):
         return
     
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(18, 6))
-    fig.suptitle('Space Efficiency — DB Size & Amplification')
+    fig.suptitle('Space Efficiency - DB Size & Amplification')
     
     lbl = [t[2] for t in tests]
     paired_bars(a1, lbl,
@@ -757,7 +757,7 @@ def plot_duration(df):
     fig, axes = plt.subplots(1, len(panels), figsize=(9*len(panels), 6))
     if len(panels) == 1:
         axes = [axes]
-    fig.suptitle('Wall-Clock Duration (sec) — Lower is Better')
+    fig.suptitle('Wall-Clock Duration (sec) - Lower is Better')
     
     for ax, (tests, title) in zip(axes, panels):
         lbl = [t[2] for t in tests]
@@ -797,7 +797,7 @@ def plot_cv(df):
     fig, axes = plt.subplots(1, len(panels), figsize=(9*len(panels), 6))
     if len(panels) == 1:
         axes = [axes]
-    fig.suptitle('Latency Variability (CV%) — Lower is More Consistent')
+    fig.suptitle('Latency Variability (CV%) - Lower is More Consistent')
     
     for ax, (tests, title) in zip(axes, panels):
         lbl = [t[2] for t in tests]
@@ -813,7 +813,7 @@ def plot_cv(df):
 # ═══════════════════════════════════════════════
 def plot_sync_writes(df):
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(16, 6))
-    fig.suptitle('Synced (Durable) Write Performance — Scaling')
+    fig.suptitle('Synced (Durable) Write Performance - Scaling')
     tests = [
         ('sync_write_random_25K_t1_b1000', '25K\n1 thread'),
         ('sync_write_random_50K_t4_b1000', '50K\n4 threads'),

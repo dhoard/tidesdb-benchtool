@@ -144,8 +144,8 @@ Unified memtable replaces all per-CF skip lists and WALs with a single shared sk
 Object store mode places SSTables in a remote (or filesystem-backed) object store and uses local disk as a cache. Setting `--object-store` automatically enables unified memtable mode (as required by TidesDB).
 
 Two backends are supported:
-- `fs` — local filesystem connector, useful for testing (always available).
-- `s3` — S3 / MinIO / GCS-compatible connector, requires `-DBENCHTOOL_WITH_S3=ON` at CMake time **and** TidesDB built with `-DTIDESDB_WITH_S3=ON`.
+- `fs` - local filesystem connector, useful for testing (always available).
+- `s3` - S3 / MinIO / GCS-compatible connector, requires `-DBENCHTOOL_WITH_S3=ON` at CMake time **and** TidesDB built with `-DTIDESDB_WITH_S3=ON`.
 
 | Option | Where it lands | Default |
 |--------|---------------|---------|
@@ -179,7 +179,7 @@ Two backends are supported:
 | `--object-prefetch-compaction <0\|1>` | per-CF `object_prefetch_compaction` | `1` |
 
 ```bash
-# Local filesystem connector — exercises the object store code path without needing S3
+# Local filesystem connector - exercises the object store code path without needing S3
 ./benchtool -e tidesdb \
   --object-store fs --object-store-fs-path /var/tmp/tidesdb-objs \
   -w write -o 1000000
@@ -210,8 +210,8 @@ The benchtool has default runners such as
 - `large_value_benchmark.sh` - 8KB value suite (PUT/GET/SEEK/RANGE) with both engines, 100K ops, 2 threads
 - `large_value_benchmark_1gb.sh` - 1GB value suite (PUT/GET/RANGE) with both engines, 10 ops, ~10GB total data
 - `tidesdb_rocksdb.sh` - main comparison suite with 25 tests across 3 categories:
-  - **Standard scale** (tests 1–12): 64MB cache, 8 threads — sequential/random/zipfian writes (10M), random reads (10M), mixed workloads (5M), deletes (5M), large values (4KB, 1M ops), small values (64B, 50M ops), batch size scaling (1–10000), delete batch scaling, seek performance (random/seq/zipfian), range scans
-  - **Large scale** (tests 13–24): 6GB cache, 16 threads, 4x operations — same workload categories at higher concurrency and volume
+  - **Standard scale** (tests 1-12): 64MB cache, 8 threads - sequential/random/zipfian writes (10M), random reads (10M), mixed workloads (5M), deletes (5M), large values (4KB, 1M ops), small values (64B, 50M ops), batch size scaling (1-10000), delete batch scaling, seek performance (random/seq/zipfian), range scans
+  - **Large scale** (tests 13-24): 6GB cache, 16 threads, 4x operations - same workload categories at higher concurrency and volume
   - **Durability** (test 25): synced writes with scaling threads and ops (25K/1t, 50K/4t, 100K/8t, 500K/16t)
 - `tidesdb_rocksdb_quick.sh` - fast benchmark inspired by RocksDB wiki (100M bulkload, 50M read/write, 16 threads, 32GB cache, ~1-2 hours)
 - `tidesdb_rocksdb_synced.sh` - synced (durable) write suite with reduced ops for practicality
@@ -446,7 +446,7 @@ Benchtool provides performance and resource metrics
 
 ### Performance Metrics
 
-The benchmark measures throughput as operations per second for PUT, GET, DELETE, and ITER operations, providing a clear picture of how fast each storage engine can handle different workload types. Latency statistics capture the complete distribution of operation times, including average latency, standard deviation, coefficient of variation (CV%), median (p50), 95th percentile (p95), 99th percentile (p99), as well as minimum and maximum values in microseconds. The coefficient of variation (stddev/mean × 100) helps identify inconsistent performance—high CV% indicates variable latency. Duration tracking shows the total wall-clock time spent on each operation type, helping identify which operations dominate the overall benchmark runtime.
+The benchmark measures throughput as operations per second for PUT, GET, DELETE, and ITER operations, providing a clear picture of how fast each storage engine can handle different workload types. Latency statistics capture the complete distribution of operation times, including average latency, standard deviation, coefficient of variation (CV%), median (p50), 95th percentile (p95), 99th percentile (p99), as well as minimum and maximum values in microseconds. The coefficient of variation (stddev/mean × 100) helps identify inconsistent performance-high CV% indicates variable latency. Duration tracking shows the total wall-clock time spent on each operation type, helping identify which operations dominate the overall benchmark runtime.
 
 ### Resource Metrics
 
