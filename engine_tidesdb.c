@@ -139,9 +139,9 @@ static int tidesdb_open_impl(storage_engine_t **engine, const char *path,
     /** because we are using 1 column family, we don't really need many threads as flushes and
     compactions are done serially, the only time it parallelizes is when there are many column
     families flushing and compacting. These can be overridden via CLI. */
-    tdb_config.num_flush_threads = config->num_flush_threads > 0 ? config->num_flush_threads : 1;
+    tdb_config.num_flush_threads = config->num_flush_threads > 0 ? config->num_flush_threads : 4;
     tdb_config.num_compaction_threads =
-        config->num_compaction_threads > 0 ? config->num_compaction_threads : 1;
+        config->num_compaction_threads > 0 ? config->num_compaction_threads : 4;
     tdb_config.log_to_file = config->log_to_file != 0 ? config->log_to_file : 1;
     tdb_config.log_level = config->debug_logging ? TDB_LOG_DEBUG : TDB_LOG_NONE;
 
